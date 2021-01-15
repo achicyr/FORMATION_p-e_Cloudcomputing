@@ -1,0 +1,7 @@
+- sudo docker run --name mymysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d -p 3307:3306 mysql:5.6
+
+- sudo docker container exec -it mymysql mysql -u root -p
+puis entrer le mot de passe ("my-secret-pw")
+
+- dd
+
