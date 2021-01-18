@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  hello:
+    image: hello
+    networks:
+      - service-set
+    environment:
+      services.message.url: http://message:8082
+      services.name.url: http://name:8082
+    ports:
+      - "8083:8083"
+
+  message:
+
+  name:
+
+  name-db:
+
+net<orks:
+  name-set
+  service-net:
+
+volumes:
+  name-db-vol:
