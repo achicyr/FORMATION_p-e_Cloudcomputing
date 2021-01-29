@@ -1,0 +1,2 @@
+2- create veiw v_max_total as select max(total) from v_fraix_totaux;
+select Codeh, Nom, total from v_fraix_totaux, v_max_total where total =`max(total)`

@@ -1,0 +1,7 @@
+1-
+
+2- create view v_max_total as select max(total) from v_fraix_totaux;
+select Codeh, Nom, total from v_fraix_totaux, v_max_total where total=`max(total)`
+
+3- create view v_marseille as select * from HABITATION where Ville='Marseille';
+select * from v_marseille;
