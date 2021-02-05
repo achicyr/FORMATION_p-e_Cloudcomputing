@@ -1,0 +1,29 @@
+version: "3"
+services: 
+  app1: 
+    build: app1
+    networks:
+      - reseau
+  app2: 
+    build: app2
+    networks:
+      - reseau
+  app3: 
+    build: app3
+    networks:
+      - reseau
+  lb-apache: 
+    build: lb-apache
+    networks:
+      - reseau
+    ports:
+      - "83:80"
+  lb-nginx: 
+    build: lb-nginx
+    networks:
+      - reseau
+    ports:
+      - "84:80"
+networks:
+  
+  reseau:
