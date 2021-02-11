@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: auth
+  labels:
+    app: auth
+spec:
+  containers:
+  - image: andreabrame/auth
+    name: auth
+    env:
+    - name: KEYCLOAK_USER
+      value: admin
+    - name: KEYCLOAK_PASSWORD
+      value: admin
+    - name: DB_VENDOR
+      value: postgres
+    - name: DB_ADDR
+      value: localhost
+    - name: DB_PORT
+      value: "5432"
+    - name: DB_USER
+      value: auth
+    - name: DB_PASSWORD
+      value: auth
+  - image: postgres
+    name: auth-db
+    env:
+    - name: POSTGRES_USER
+      value: auth
+    - name: POSTGRES_PASSWORD
+      value: auth
+    - name: POSTGRES_DB
+      value: keycloak
+    volumeMounts:
+    - name: auth-db-vol
+      mountPath: /var/lib/postgresql/data
+  volumes:
+  - name: auth-db-vol
+    emptyDir: {​}​
+    
