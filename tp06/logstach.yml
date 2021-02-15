@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-configmap
+  namespace: kube-system
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    path.config: /usr/share/logstash/pipeline
+  frontend.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+      grok {
+        match => { "message" => "%{COMBINEDAPACHELOG}" }
+      }
+      date {
+        match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
+      }
+      geoip {
+         source => "clientip"
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-logging:9200"]
+        index => "frondend-%{+YYYY.MM.dd}"
+      }
+    }
+  auth.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+      grok {
+        match => { "message" => "%{TIME:time} %{LOGLEVEL:level} %{GREEDYDATA:source}" }
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-logging:9200"]
+        index => "auth-%{+YYYY.MM.dd}"
+      }
+    }
+  authdb.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    filter {
+      grok {
+        match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{WORD:timezone} \[%{NOTSPACE:ignored}\] %{WORD:level}: %{GREEDYDATA:message}" }
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-logging:9200"]
+        index => "authdb-%{+YYYY.MM.dd}"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-deployment
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:6.3.0
+        ports:
+        - containerPort: 5044
+        volumeMounts:
+          - name: config-volume
+            mountPath: /usr/share/logstash/config
+          - name: logstash-pipeline-volume
+            mountPath: /usr/share/logstash/pipeline
+      volumes:
+      - name: config-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: logstash.yml
+              path: logstash.yml
+      - name: logstash-pipeline-volume
+        configMap:
+          name: logstash-configmap
+          items:
+            - key: frontend.conf
+              path: frontend.conf
+            - key: auth.conf
+              path: auth.conf
+            - key: authdb.conf
+              path: authdb.conf
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash-service
+  namespace: kube-system
+spec:
+  selector:
+    app: logstash
+  ports:
+  - protocol: TCP
+    port: 5044
+    targetPort: 5044
