@@ -1,0 +1,7 @@
+---
+# handlers file for database
+
+- name: Restart mysql # Debian os family
+  service:
+    name: "{{ mysql_service }}"
+    state: restarted

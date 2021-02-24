@@ -1,0 +1,4 @@
+---
+apache_service: "apache2"
+mysql_service: "mysql"
+mysql_socket: "/var/run/mysqld/mysqld.sock"

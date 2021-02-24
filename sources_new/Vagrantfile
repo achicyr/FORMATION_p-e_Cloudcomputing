@@ -1,0 +1,30 @@
+# ####################################################################
+# ################### CONFIGURATION VARIABLES ########################
+# ####################################################################
+IMAGE_NAME_1 = "bento/ubuntu-20.04"   # Image to use
+IMAGE_NAME_2 = "fedora/32-cloud-base"   # Image to use
+MEM = 2048                              # Amount of RAM
+CPU = 1                                 # Number of processors
+SLAVE_NBR = 2                           # Number of slaves node
+NETWORK_ADAPTER="wlp1s0"                # Bridge network adapter
+
+Vagrant.configure("2") do |config|
+    # RAM and CPU config
+    config.vm.provider "virtualbox" do |v|
+        v.memory = MEM
+        v.cpus = CPU
+    end
+    config.ssh.insert_key = false
+    config.vm.define "slave-1" do |slave|
+        # OS and Hostname
+        slave.vm.box = IMAGE_NAME_1
+        slave.vm.hostname = "slave-1"
+        slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip:"192.168.0.48"
+    end
+    config.vm.define "slave-2" do |slave|
+        # OS and Hostname
+        slave.vm.box = IMAGE_NAME_2
+        slave.vm.hostname = "slave-2"
+        slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip:"192.168.0.18"
+    end
+end
