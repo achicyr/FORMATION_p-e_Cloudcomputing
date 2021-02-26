@@ -1,0 +1,4 @@
+[web]
+webapp ansible_user=vagrant
+[db]
+mysql ansible_user=vagrant
