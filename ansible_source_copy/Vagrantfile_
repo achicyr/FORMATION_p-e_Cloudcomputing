@@ -1,0 +1,39 @@
+# ####################################################################
+# ################### CONFIGURATION VARIABLES ########################
+# ####################################################################
+IMAGE_NAME = "bento/ubuntu-20.04"   # Image to use
+MEM = 2048                          # Amount of RAM
+CPU = 1                             # Number of processors
+SLAVE_NBR = 2                       # Number of slaves node
+NETWORK_ADAPTER="wlp3s0"            # Bridge network adapter
+
+
+Vagrant.configure("2") do |config|
+    # RAM and CPU config
+    config.vm.provider "virtualbox" do |v|
+        v.memory = MEM
+        v.cpus = CPU
+    end
+
+    # Slave node config
+    (1..SLAVE_NBR).each do |i|
+        if (i == 1)
+            config.ssh.insert_key = false
+            config.vm.define "webapp" do |slave|
+                # OS and Hostname
+                slave.vm.box = IMAGE_NAME
+                slave.vm.hostname = "webapp"
+                slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.21"
+            end
+        end
+        if (i == 2)
+            config.ssh.insert_key = false
+            config.vm.define "mysql" do |slave|
+                # OS and Hostname
+                slave.vm.box = IMAGE_NAME
+                slave.vm.hostname = "mysql"
+                slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.22"
+            end
+        end
+    end
+end
