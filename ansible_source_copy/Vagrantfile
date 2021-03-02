@@ -4,7 +4,7 @@
 IMAGE_NAME = "bento/ubuntu-20.04"   # Image to use
 MEM = 2048                          # Amount of RAM
 CPU = 1                             # Number of processors
-SLAVE_NBR = 2                       # Number of slaves node
+SLAVE_NBR = 4                      # Number of slaves node
 NETWORK_ADAPTER="wlp3s0"            # Bridge network adapter
 
 
@@ -17,12 +17,41 @@ Vagrant.configure("2") do |config|
 
     # Slave node config
     (1..SLAVE_NBR).each do |i|
-        config.ssh.insert_key = false
-        config.vm.define "slave-#{i}" do |slave|
-            # OS and Hostname
-            slave.vm.box = IMAGE_NAME
-            slave.vm.hostname = "slave-#{i}"
-            slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.3#{i}"
+        if (i == 1)
+            config.ssh.insert_key = false
+            config.vm.define "bug" do |slave|
+                # OS and Hostname
+                slave.vm.box = IMAGE_NAME
+                slave.vm.hostname = "bug"
+                slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.3#{5+i}"
+            end
+        end
+        if (i == 2)
+            config.ssh.insert_key = false
+            config.vm.define "webapp" do |slave|
+                # OS and Hostname
+                slave.vm.box = IMAGE_NAME
+                slave.vm.hostname = "webapp"
+                slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.3#{5+i}"
+            end#{5+i}        else
+        end
+        if (i==3) 
+            config.ssh.insert_key = false
+            config.vm.define "mydb" do |slave|
+                # OS and Hostname
+                slave.vm.box = IMAGE_NAME
+                slave.vm.hostname = "mydb"
+                slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.3#{5+i}"
+            end
+        end
+        if (i==4) 
+            config.ssh.insert_key = false
+            config.vm.define "mydb-readonly" do |slave|
+                # OS and Hostname
+                slave.vm.box = IMAGE_NAME
+                slave.vm.hostname = "mydb-readonly"
+                slave.vm.network "public_network", bridge: NETWORK_ADAPTER, ip: "192.168.0.3#{5+i}"
+            end
         end
     end
 end
