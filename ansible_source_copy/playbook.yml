@@ -28,7 +28,7 @@
 
   - name: upload web app source
     copy:
-      src: webapp/
+      src: webapp/web
       dest: /var/www/html/
 
   - name: deploy php database config
@@ -81,12 +81,26 @@
       path: /etc/mysql/mysql.conf.d/mysqld.cnf
       regexp: '^bind-address'
       line: "# bind-address"
+  - name: Allow external MySQL connections (2/2)
+    lineinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      regexp: '^#server-id'
+      line: "server-id"
     notify: Restart mysql
-
   - name: upload sql table config
     template:
       src: "table.sql.j2"
       dest: "/tmp/table.sql"
+  #- name: Create a mysql user with master privileges
+  #  command: ls #je ne sais pas comment écrire la commande mysql afin de pouvoir créer ce TheUser 
+    #grep CHANGE *sql | head -1
+    #create user 'TheUser'@'%' identified by 'azerty';
+    #grant replication slave on *.* to 'TheUser'@'%';
+    notify: Restart mysql
+  - name: create dumpfile.sql
+    command: sudo mysqldump -uTheUser --all-databases --master-data > dumpfile.sql
+  - name: send dump file to host (not yet)slave 192.168.0.18
+    command: scp vagrant@192.168.0.18
 
   - name: add sql table to database
     mysql_db:
@@ -123,7 +137,8 @@
 
 
 
-# DATABASE SERVER REPLICATION
+
+# DATABASE SERVER
 
 - hosts: replicate
   become: true
@@ -161,12 +176,24 @@
       path: /etc/mysql/mysql.conf.d/mysqld.cnf
       regexp: '^bind-address'
       line: "# bind-address"
+  - name: Allow external MySQL connections (3/2)
+    lineinfile:
+      path: /etc/mysql/mysql.conf.d/mysqld.cnf
+      regexp: '^#server-id\(.*\)\=\(.*\) .'
+      line: "server-id\1\=\2 2"
     notify: Restart mysql
-
   - name: upload sql table config
     template:
       src: "table.sql.j2"
       dest: "/tmp/table.sql"
+  #- name: Declare host 'mysql' master role
+    # CHANGE MASTER TO MASTER_HOST='192.168.0.17, MASTER_USER='TheUser', MASTER_PASSWORD='azerty';'
+  - name: create dumpfile.sql
+    command: sudo mysqldump -uTheUser --all-databases --master-data > dumpfile.sql
+  - name: send dump file to host (not yet)slave 192.168.0.17
+    command: 'scp filedump.sql 192.168.0.17:'
+  - name: load dumped master's sql file
+    command: 'mysql -TheUser < dumpfile.sql'
 
   - name: add sql table to database
     mysql_db:
@@ -193,4 +220,3 @@
       service:
         name: mysql
         state: restarted
-
